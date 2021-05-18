@@ -1,5 +1,5 @@
-import express, { response } from "express";
-import { userModel, connection } from "../database/models.js";
+import express from "express";
+import { userModel } from "../database/models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { allSockets } from "../websocket/index.js";
@@ -64,22 +64,28 @@ router.post("/register", async (req, res) => {
 	}
 
 	let _id = mongoose.Types.ObjectId();
-	const avatar = req.files.img;
-	const uploadPath = path.join(
-		__dirname + "/backend/public/avatars/_" + _id + ".png"
-	);
-	await avatar.mv(uploadPath, (err) => {
-		if (err) {
-			console.error(err);
-			res.sendStatus(400).end();
-		}
-	});
+	let img;
+	if (req.files && req.files.img) {
+		const avatar = req.files.img;
+		const uploadPath = path.join(
+			__dirname + "/backend/public/avatars/_" + _id + ".png"
+		);
+		await avatar.mv(uploadPath, (err) => {
+			if (err) {
+				console.error(err);
+				res.sendStatus(400).end();
+			}
+		});
+		img = `_${_id}.png`;
+	} else {
+		img = "base.png";
+	}
 
 	let newUser = await userModel.create({
 		_id,
 		username: req.body.username,
 		email: req.body.email,
-		img: `_${_id}.png`,
+		img,
 		online: false,
 		admin: req.body.admin,
 		unido_en: new Date().getTime(),
@@ -115,10 +121,6 @@ router.post("/save_profile", async (req, res) => {
 	}
 	let id = String(jwt.decode(req.headers.authorization).id);
 
-	await userModel.findByIdAndUpdate(id, {
-		username: req.body.name,
-	});
-
 	if (req.files && req.files.img) {
 		const avatar = req.files.img;
 		const uploadPath = path.join(
@@ -131,6 +133,12 @@ router.post("/save_profile", async (req, res) => {
 			}
 		});
 	}
+
+	await userModel.findByIdAndUpdate(id, {
+		username: req.body.name,
+		img: req.files && req.files.img ? "_" + id + ".png" : "base.png",
+	});
+
 	res.end();
 });
 

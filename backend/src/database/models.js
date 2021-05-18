@@ -23,7 +23,7 @@ const conn = (() => {
 })();
 
 // const mongo = connectDb().then( res => console.log(res) )
-export const connection = await conn;
+export const connection = async () => await conn;
 export const ticketModel = mongoose.model("ticket", ticketSchema);
 export const userModel = mongoose.model("user", userSchema);
 export const imageModel = mongoose.model("image", imageSchema);

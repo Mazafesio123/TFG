@@ -48,6 +48,7 @@ const routes = [
 				method: "POST",
 				data: {
 					ticketId: id,
+					users: [ store.getters.getDecodedToken.id ]
 				},
 			});
 			next({ name: "Ticket", query: { id: id } });

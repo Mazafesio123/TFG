@@ -38,7 +38,7 @@ export function initIO(httpServer) {
 		socket.on("send-message", async (data) => {
 			let ticket = await ticketModel.findById(data.ticket_id);
 			let _id = mongoose.Types.ObjectId();
-			console.log(data);
+			
 			let files;
 			if (data.file) {
 				fs.writeFile(
@@ -73,6 +73,7 @@ export function initIO(httpServer) {
 		});
 
 		socket.on("typing", (typing, user) => {
+			console.log({typing, user})
 			socket.broadcast.emit("typing", { typing, user });
 		});
 

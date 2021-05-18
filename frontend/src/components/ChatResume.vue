@@ -30,7 +30,7 @@
                   <v-img
                     v-on="on"
                     v-bind="attrs"
-                    :src="user.img"
+                    :src="`http://localhost:3000/avatars/${user.img}`"
                     :class="`${user.online ? '' : 'filter'}`"
                   ></v-img>
                 </template>

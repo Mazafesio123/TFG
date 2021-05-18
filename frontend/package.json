@@ -14,6 +14,7 @@
     "hermite-resize": "git+https://github.com/viliusle/Hermite-resize.git",
     "jwt-decode": "^3.1.2",
     "redaxios": "^0.4.1",
+    "v-viewer": "^1.5.1",
     "vue": "^2.6.11",
     "vue-advanced-cropper": "^1.5.0",
     "vue-clipboard2": "^0.3.1",
