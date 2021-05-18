@@ -94,21 +94,10 @@
       </v-col>
     </v-row>
 
-    <div class="input">
-      <v-text-field
-        solo
-        placeholder="Escribe aquí tu mensaje"
-        hide-details
-        v-model="message"
-        @keydown.enter="sendMessage"
-        full-width
+    <message-input
+        :ticketId="data._id"
         :disabled="cerrado || noMembers"
-        class="mx-1"
-        @click:append="message.length > 0 ? sendMessage() : null"
-        :append-icon="message.length > 0 ? 'mdi-send' : 'mdi-microphone'"
-      >
-      </v-text-field>
-    </div>
+     />
 
     <v-dialog persistent v-model="changeState" max-width="900px">
       <v-card class="pa-4">
@@ -257,6 +246,7 @@ import { getUserStatusColor, getTicketStatus } from "@/utils/index";
 export default {
   components: {
     Message,
+    MessageInput: () => import('@/components/MessageInput.vue')
   },
   data() {
     return {
@@ -264,7 +254,6 @@ export default {
       userName: this.$store.getters.getUserName,
       data: null,
       messages: [],
-      message: "",
       changeState: false,
       addUserModal: false,
       coppiedIcon: "mdi-content-copy",
@@ -288,17 +277,6 @@ export default {
   methods: {
     getUserStatusColor,
     getTicketStatus,
-    sendMessage() {
-      if (this.message == "") return;
-      let data = {
-        author: this.userId,
-        text: this.message,
-        date: new Date().getTime(),
-        ticket_id: this.data._id,
-      };
-      this.$socket.emit("send-message", data);
-      this.message = "";
-    },
     coppied() {
       let temp = this.coppiedIcon;
       this.coppiedIcon = "mdi-check";
@@ -333,6 +311,7 @@ export default {
       });
       this.messages = [...messages.messages, ...this.messages];
       this.finished = messages.done;
+      console.log(this.messages)
       if (scroll) {
         this.$nextTick(() => {
           let objDiv = this.$refs.messages;
@@ -362,6 +341,8 @@ export default {
       a._id == data.author ? -1 : b._id == data.author ? 1 : 0
     );
     this.data = data;
+
+    console.log(this.data)
 
     this.getMessages();
 

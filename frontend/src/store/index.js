@@ -11,6 +11,7 @@ export default new Vuex.Store({
 	},
 	getters: {
 		getToken: (state) => state.token,
+		getDecodedToken: (state) => jwt_decode(state.token),
 		isLoggedIn: (state) => !!state.token,
 		getUserId: (state, { isLoggedIn }) =>
 			isLoggedIn ? jwt_decode(state.token).id : null,

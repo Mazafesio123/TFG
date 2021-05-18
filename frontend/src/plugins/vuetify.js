@@ -10,8 +10,8 @@ export default new Vuetify({
 		},
 		themes: {
 			light: {
-				primary: '#5F00BA',
-				secondary: '#EB4B98'
+				primary: '#e41270',
+				secondary: '#0983bc'
 			}
 		}
 	}

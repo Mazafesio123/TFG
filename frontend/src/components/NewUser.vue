@@ -134,26 +134,13 @@ export default {
     },
     async addUser() {
       if (!this.$refs.form.validate()) return;
-      function urltoFile(url, filename, mimeType) {
-        return new Promise((resolve) =>
-          fetch(url)
-            .then(function (res) {
-              return res.arrayBuffer();
-            })
-            .then(function (buf) {
-              resolve(new File([buf], filename, { type: mimeType }));
-            })
-        );
-      }
-      let file = false;
-      if (this.img != null) {
-        file = await urltoFile(this.img, "avatar.png", "image/png");
-      }
+
+      let file = await fetch(this.img).then((res) => res.blob());
 
       let formData = new FormData();
       formData.append("username", this.username);
       formData.append("email", this.email);
-      if (file) formData.append("img", file);
+      formData.append("img", file);
       formData.append("admin", this.admin);
 
       axios({
