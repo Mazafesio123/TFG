@@ -247,6 +247,7 @@ export default {
 			});
 			this.messages = [...messages.messages, ...this.messages];
 			this.finished = messages.done;
+			console.log(this.messages)
 
 			if (scroll) {
 				this.$nextTick(() => {

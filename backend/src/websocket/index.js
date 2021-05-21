@@ -2,15 +2,14 @@ import { Server } from "socket.io";
 import { ticketModel, userModel } from "./../database/models.js";
 import mongoose from "mongoose";
 import fs from "fs";
-import fileType from "file-type";
 
 export let allSockets = [];
 
 export function initIO(httpServer) {
 	const io = new Server(httpServer, {
-		origins: ["http://localhost:8080"],
+		origins: ["http://localhost:8082"],
 		cors: {
-			origin: "http://localhost:8080",
+			origin: "http://localhost:8082",
 			methods: ["GET", "POST"],
 			credentials: false,
 		},
@@ -38,42 +37,46 @@ export function initIO(httpServer) {
 		socket.on("send-message", async (data) => {
 			let ticket = await ticketModel.findById(data.ticket_id);
 			let _id = mongoose.Types.ObjectId();
-			
-			let files;
+
+			const response = async (err, file) => {
+				console.log(err)
+				if (err) throw err;
+				console.log(file)
+				ticket.messages.unshift({
+					_id,
+					text: data.text,
+					date: data.date,
+					author: data.author,
+					file :file,
+				});
+				ticket.save();
+
+				let user = await userModel.findById(data.author, "username img");
+				io.to(data.ticket_id).emit("send-message", {
+					_id,
+					text: data.text,
+					date: data.date,
+					author: { _id: data.author, username: user.username, img: user.img },
+					file : file,
+				});
+			};
+
 			if (data.file) {
-				fs.writeFile(
+				await fs.writeFile(
 					`public/documents/_${_id}.${data.file.ext}`,
 					data.file.file,
-					(err) => console.log(err)
+					(err) =>
+						response(err, {
+							_id,
+							name: data.file.name,
+							ext: data.file.ext,
+						})
 				);
-				files = {
-					name: data.file.name,
-					_id,
-					ext: data.file.ext,
-				};
-			}
-
-			ticket.messages.unshift({
-				_id,
-				text: data.text,
-				date: data.date,
-				author: data.author,
-				file: files,
-			});
-			ticket.save();
-
-			let user = await userModel.findById(data.author, "username img");
-			io.to(data.ticket_id).emit("send-message", {
-				text: data.text,
-				date: data.date,
-				author: { _id: data.author, username: user.username, img: user.img },
-				file: files,
-				_id,
-			});
+			} else response();
 		});
 
 		socket.on("typing", (typing, user) => {
-			console.log({typing, user})
+			console.log({ typing, user });
 			socket.broadcast.emit("typing", { typing, user });
 		});
 
