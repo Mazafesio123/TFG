@@ -6,13 +6,11 @@ import { allSockets } from "../websocket/index.js";
 import { isLogged } from "../utils/index.js";
 import mongoose from "mongoose";
 import path from "path";
-import fs from "fs";
 
 const __dirname = path.dirname((global.__dirname = process.cwd()));
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
-
 	try {
 		var t = await userModel.findOne({ email: req.body.username });
 	} catch (e) {
@@ -31,6 +29,7 @@ router.post("/login", async (req, res) => {
 				username: t.username,
 				img: t.img,
 				admin: t.admin,
+				defaultPassword: t.defaultPassword,
 				iat: date.getTime(),
 			},
 			process.env.SECRET

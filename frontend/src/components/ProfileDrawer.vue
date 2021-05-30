@@ -3,7 +3,7 @@
 		<v-card-title>Perfil</v-card-title>
 		<div>
 			<v-img
-				:src="`http://localhost:3000/avatars/${$store.getters.getDecodedToken.img}`"
+				:src="`${baseUrl}/avatars/${$store.getters.getDecodedToken.img}`"
 				contain
 				style="max-width: 200px"
 				class="mx-auto mt-4"
@@ -94,6 +94,8 @@ export default {
 			crop: null,
 			img: null,
 			croppedImage: null,
+
+			baseUrl: process.env.VUE_APP_BASE_URL
 		};
 	},
 	computed: {

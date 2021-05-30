@@ -60,7 +60,7 @@
 						<v-btn @click.stop="drawer = true" icon>
 							<v-avatar size="30">
 								<v-img
-									:src="`http://localhost:3000/avatars/${$store.getters.getDecodedToken.img}`"
+									:src="`${baseUrl}/avatars/${$store.getters.getDecodedToken.img}`"
 								></v-img>
 							</v-avatar>
 						</v-btn>
@@ -111,6 +111,7 @@ export default {
 		ChatResume,
 		NewUser,
 		ProfileDrawer: () => import("@/components/ProfileDrawer.vue"),
+		NewTicket: () => import("@/components/NewTicket.vue"),
 	},
 	data() {
 		return {
@@ -123,7 +124,9 @@ export default {
 
 			newTicket: false,
 			newUser: false,
-			drawer: true,
+			drawer: false,
+
+			baseUrl: process.env.VUE_APP_BASE_URL
 		};
 	},
 	computed: {

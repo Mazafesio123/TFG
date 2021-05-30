@@ -30,7 +30,7 @@
                   <v-img
                     v-on="on"
                     v-bind="attrs"
-                    :src="`http://localhost:3000/avatars/${user.img}`"
+                    :src="`${baseUrl}/avatars/${user.img}`"
                     :class="`${user.online ? '' : 'filter'}`"
                   ></v-img>
                 </template>
@@ -55,6 +55,11 @@ export default {
     },
     active: Boolean,
     unreadMessages: Number,
+  },
+  data() {
+    return {
+			baseUrl: process.env.VUE_APP_BASE_URL
+    }
   },
   methods: {
     getTicketStatus,

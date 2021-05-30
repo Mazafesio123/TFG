@@ -75,10 +75,10 @@ const router = new VueRouter({
 	routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
 	if (to.matched.some((record) => record.meta.requiresLogin)) {
 		if (!store.getters.isLoggedIn || !validateToken()) {
-			store.dispatch("logout");
+			await store.dispatch("logout");
 			next({
 				name: "Login",
 				query: { redirect: to.fullPath },

@@ -12,7 +12,7 @@ import path from 'path';
 const app = express();
 const __dirname = path.dirname(global.__dirname = process.cwd());
 
-app.use(cors({ credentials: true, origin: "http://localhost:8082" }));
+app.use(cors({ credentials: true, origin: env.FRONTEND }));
 app.use(expressFileupload({
 	useTempFiles: true,
 	tempFileDir: path.join(__dirname, './tmp')

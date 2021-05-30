@@ -2,6 +2,8 @@ import Vue from "vue";
 import Vuex from "vuex";
 import jwt_decode from "jwt-decode";
 import axiosModule from "redaxios";
+import VueSocketIO from "vue-socket.io";
+import SocketIO from "socket.io-client";
 
 Vue.use(Vuex);
 
@@ -44,15 +46,33 @@ export default new Vuex.Store({
 					data: credentials,
 				})
 					.then(async (res) => {
+						if (jwt_decode(res.data).defaultPassword) {
+							
+						}
+
 						await commit("login", res.data);
 						window.axios = axiosModule.create({
 							headers: {
 								Authorization: res.data,
 							},
 						});
+
+						Vue.use(
+							new VueSocketIO({
+								debug: true,
+								connection: SocketIO(process.env.VUE_APP_BASE_URL, {
+									widthCredentials: true,
+									transports: ["websocket"],
+									query: "userId=" + jwt_decode(res.data).id,
+								}),
+								options: { widthCredentials: true }, //Optional options
+							})
+						);
+
 						resolve(res.data);
 					})
-					.catch(() => {
+					.catch((err) => {
+						console.error(err);
 						reject();
 					});
 			});

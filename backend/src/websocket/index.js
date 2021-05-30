@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { ticketModel, userModel } from "./../database/models.js";
+import env from "./../config.js";
 import mongoose from "mongoose";
 import fs from "fs";
 
@@ -7,13 +8,14 @@ export let allSockets = [];
 
 export function initIO(httpServer) {
 	const io = new Server(httpServer, {
-		origins: ["http://localhost:8082"],
+		origins: [env.FRONTEND],
 		cors: {
-			origin: "http://localhost:8082",
+			origin: env.FRONTEND,
 			methods: ["GET", "POST"],
 			credentials: false,
 		},
 		allowEIO3: true,
+		maxHttpBufferSize: 1e7,
 	});
 
 	io.on("connection", async (socket) => {
@@ -35,29 +37,31 @@ export function initIO(httpServer) {
 		});
 
 		socket.on("send-message", async (data) => {
-			let ticket = await ticketModel.findById(data.ticket_id);
-			let _id = mongoose.Types.ObjectId();
+			const _id = mongoose.Types.ObjectId();
 
 			const response = async (err, file) => {
-				console.log(err)
 				if (err) throw err;
-				console.log(file)
-				ticket.messages.unshift({
-					_id,
-					text: data.text,
-					date: data.date,
-					author: data.author,
-					file :file,
+
+				await ticketModel.findByIdAndUpdate(data.ticket_id, {
+					$push: {
+					messages: {
+							_id,
+							text: data.text,
+							date: data.date,
+							author: data.author,
+							file: file,
+						},
+					},
 				});
-				ticket.save();
 
 				let user = await userModel.findById(data.author, "username img");
+
 				io.to(data.ticket_id).emit("send-message", {
 					_id,
 					text: data.text,
 					date: data.date,
 					author: { _id: data.author, username: user.username, img: user.img },
-					file : file,
+					file: file,
 				});
 			};
 
@@ -76,7 +80,6 @@ export function initIO(httpServer) {
 		});
 
 		socket.on("typing", (typing, user) => {
-			console.log({ typing, user });
 			socket.broadcast.emit("typing", { typing, user });
 		});
 

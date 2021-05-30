@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { isLogged } from "../utils/index.js";
 import { allSockets } from "../websocket/index.js";
-import { connection } from "../database/models.js";
 
 const router = express.Router();
 
@@ -72,7 +71,7 @@ router.get("/messages", async (req, res) => {
 		},
 	});
 
-	let messages = m.messages.slice((page - 1) * perPage, page * perPage);
+	let messages = m.messages.reverse().slice((page - 1) * perPage, page * perPage);
 
 	try {
 		var done =
@@ -90,14 +89,29 @@ router.delete("/delete_message", async (req, res) => {
 		res.end();
 		return;
 	}
-	let usuario = jwt.decode(req.headers.authorization);
+	let { admin, id } = jwt.decode(req.headers.authorization);
+	let usuario = await userModel.findById(id);
 	let msg = await ticketModel.findOne({
 		messages: {
 			$elemMatch: { _id: req.body.messageId },
 		},
 	});
-	msg.messages = msg.messages.filter((m) => m._id != req.body.messageId);
-	await msg.save();
+	if (
+		usuario.id ==
+			msg.messages.find((m) => m._id == req.body.messageId).author ||
+		admin
+	) {
+		msg.messages = msg.messages.filter((m) => m._id != req.body.messageId);
+		await msg.save();
+	} else {
+		res.sendStatus(403);
+		res.end();
+		return;
+	}
+
+	allSockets.forEach(socket => {
+		socket.emit('delete-message', req.body.messageId)
+	})
 
 	res.sendStatus(200);
 	res.end();
@@ -131,8 +145,16 @@ router.post("/join", async (req, res) => {
 		res.end();
 		return;
 	}
+
 	let ticket = await ticketModel.findById(req.body.ticketId);
-	if (ticket.state != "cerrado") {
+	let isAdmin = await userModel.findById(
+		jwt.decode(req.headers.authorization).id,
+		"admin"
+	);
+	if (
+		ticket.state != "cerrado" &&
+		(isAdmin || ticket.author == req.headers.authorization)
+	) {
 		req.body.users.forEach((userId) => {
 			if (!ticket.user.includes(userId))
 				ticket.user.push({
