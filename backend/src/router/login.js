@@ -97,6 +97,44 @@ router.post("/register", async (req, res) => {
 	res.sendStatus(200);
 });
 
+router.post("/change_password", async (req, res) => {
+	const t = await userModel.findOne({ email: req.body.username });
+
+	if (!t || !(await bcrypt.compare(req.body.password, t.password))) {
+		res.status(403);
+		res.end();
+	} else {
+		let date = new Date();
+		date.setDate(date.getDate() + 1);
+		t.password = await bcrypt.hash(req.body.newPassword, await bcrypt.genSalt());
+		t.defaultPassword = false;
+		await t.save();
+		let token = jwt.sign(
+			{
+				id: t._id,
+				username: t.username,
+				img: t.img,
+				admin: t.admin,
+				defaultPassword: t.defaultPassword,
+				iat: date.getTime(),
+			},
+			process.env.SECRET
+		);
+		t.online = true;
+		await t.save();
+
+		allSockets.forEach((sock) => {
+			sock.emit("userChangeState", {
+				userId: t._id,
+				online: true,
+			});
+		});
+
+		res.status(200);
+		res.json(token);
+	}
+});
+
 router.delete("/login", async (req, res) => {
 	let u = await userModel.findById(req.body.id);
 	if (!u) res.end();

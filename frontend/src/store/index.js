@@ -38,7 +38,31 @@ export default new Vuex.Store({
 		},
 	},
 	actions: {
-		login({ commit, getters }, credentials) {
+		iniciarSesion({ commit, getters }, token) {
+			return new Promise(async (resolve, reject) => {
+				await commit("login", token);
+				window.axios = axiosModule.create({
+					headers: {
+						Authorization: token,
+					},
+				});
+
+				Vue.use(
+					new VueSocketIO({
+						debug: true,
+						connection: SocketIO(process.env.VUE_APP_BASE_URL, {
+							widthCredentials: true,
+							transports: ["websocket"],
+							query: "userId=" + jwt_decode(token).id,
+						}),
+						options: { widthCredentials: true }, //Optional options
+					})
+				);
+
+				resolve(token);
+			});
+		},
+		login({ commit, getters, dispatch }, credentials) {
 			return new Promise(async (resolve, reject) => {
 				axios({
 					method: "POST",
@@ -47,33 +71,19 @@ export default new Vuex.Store({
 				})
 					.then(async (res) => {
 						if (jwt_decode(res.data).defaultPassword) {
-							
+							reject({
+								changePassword: true,
+							});
+							return;
 						}
 
-						await commit("login", res.data);
-						window.axios = axiosModule.create({
-							headers: {
-								Authorization: res.data,
-							},
-						});
-
-						Vue.use(
-							new VueSocketIO({
-								debug: true,
-								connection: SocketIO(process.env.VUE_APP_BASE_URL, {
-									widthCredentials: true,
-									transports: ["websocket"],
-									query: "userId=" + jwt_decode(res.data).id,
-								}),
-								options: { widthCredentials: true }, //Optional options
-							})
-						);
-
-						resolve(res.data);
+						dispatch("iniciarSesion", res.data)
+							.then((res) => resolve(res))
+							.catch((err) => reject(err));
 					})
 					.catch((err) => {
 						console.error(err);
-						reject();
+						reject(err);
 					});
 			});
 		},
