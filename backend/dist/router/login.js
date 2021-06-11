@@ -21,6 +21,8 @@ var _mongoose = _interopRequireDefault(require("mongoose"));
 
 var _path = _interopRequireDefault(require("path"));
 
+var _config = _interopRequireDefault(require("../config.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -45,31 +47,32 @@ router.post("/login", /*#__PURE__*/function () {
 
           case 2:
             t = _context.sent;
+            console.log(t);
             _context.t0 = !t;
 
             if (_context.t0) {
-              _context.next = 8;
+              _context.next = 9;
               break;
             }
 
-            _context.next = 7;
+            _context.next = 8;
             return _bcrypt["default"].compare(req.body.password, t.password);
 
-          case 7:
+          case 8:
             _context.t0 = !_context.sent;
 
-          case 8:
+          case 9:
             if (!_context.t0) {
-              _context.next = 13;
+              _context.next = 14;
               break;
             }
 
             res.status(403);
             res.end();
-            _context.next = 22;
+            _context.next = 23;
             break;
 
-          case 13:
+          case 14:
             date = new Date();
             date.setDate(date.getDate() + 1);
             token = _jsonwebtoken["default"].sign({
@@ -81,10 +84,10 @@ router.post("/login", /*#__PURE__*/function () {
               iat: date.getTime()
             }, process.env.SECRET);
             t.online = true;
-            _context.next = 19;
+            _context.next = 20;
             return t.save();
 
-          case 19:
+          case 20:
             _index.allSockets.forEach(function (sock) {
               sock.emit("userChangeState", {
                 userId: t._id,
@@ -95,7 +98,7 @@ router.post("/login", /*#__PURE__*/function () {
             res.status(200);
             res.json(token);
 
-          case 22:
+          case 23:
           case "end":
             return _context.stop();
         }
@@ -176,17 +179,18 @@ router.post("/register", /*#__PURE__*/function () {
             _context2.t5 = req.body.admin;
             _context2.t6 = new Date().getTime();
             _context2.t7 = _bcrypt["default"];
-            _context2.next = 32;
+            _context2.t8 = _config["default"].BASE_PASSWORD;
+            _context2.next = 33;
             return _bcrypt["default"].genSalt();
 
-          case 32:
-            _context2.t8 = _context2.sent;
-            _context2.next = 35;
-            return _context2.t7.hash.call(_context2.t7, "1234", _context2.t8);
-
-          case 35:
+          case 33:
             _context2.t9 = _context2.sent;
-            _context2.t10 = {
+            _context2.next = 36;
+            return _context2.t7.hash.call(_context2.t7, _context2.t8, _context2.t9);
+
+          case 36:
+            _context2.t10 = _context2.sent;
+            _context2.t11 = {
               _id: _context2.t1,
               username: _context2.t2,
               email: _context2.t3,
@@ -194,21 +198,21 @@ router.post("/register", /*#__PURE__*/function () {
               online: false,
               admin: _context2.t5,
               unido_en: _context2.t6,
-              password: _context2.t9,
+              password: _context2.t10,
               defaultPassword: true
             };
-            _context2.next = 39;
-            return _context2.t0.create.call(_context2.t0, _context2.t10);
+            _context2.next = 40;
+            return _context2.t0.create.call(_context2.t0, _context2.t11);
 
-          case 39:
+          case 40:
             newUser = _context2.sent;
-            _context2.next = 42;
+            _context2.next = 43;
             return newUser.save();
 
-          case 42:
+          case 43:
             res.sendStatus(200);
 
-          case 43:
+          case 44:
           case "end":
             return _context2.stop();
         }
@@ -364,7 +368,7 @@ router["delete"]("/login", /*#__PURE__*/function () {
 }());
 router.post("/save_profile", /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
-    var id, avatar, uploadPath;
+    var id, avatar, uploadPath, t, date, token;
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
@@ -404,9 +408,25 @@ router.post("/save_profile", /*#__PURE__*/function () {
             });
 
           case 12:
+            _context5.next = 14;
+            return _models.userModel.findById(id);
+
+          case 14:
+            t = _context5.sent;
+            date = new Date();
+            date.setDate(date.getDate() + 1);
+            token = _jsonwebtoken["default"].sign({
+              id: t._id,
+              username: t.username,
+              img: t.img,
+              admin: t.admin,
+              defaultPassword: t.defaultPassword,
+              iat: date.getTime()
+            }, process.env.SECRET);
+            res.json(token);
             res.end();
 
-          case 13:
+          case 20:
           case "end":
             return _context5.stop();
         }

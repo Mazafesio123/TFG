@@ -13,7 +13,7 @@ services:
       - APP_PORT=80
       - MONGO_URL=mongodb://mongo:27017/tfg
       - APP_FRONTEND=http://localhost
-      - SECRET=L68}>[N}{q?.`;EBNtuc33wStle~}.
+      - SECRET=au3o6b4ouiwbea65v78we65bva908W7456BV9874WA56BV987AW56BV987AW456BV9A78W45n978wa4
       - BASE_PASSWORD=1234
     ports: ['80:80']
 
@@ -39,3 +39,4 @@ services:
 
 volumes:
   dbdata:
+

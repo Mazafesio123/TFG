@@ -6,14 +6,14 @@ import { allSockets } from "../websocket/index.js";
 import { isLogged } from "../utils/index.js";
 import mongoose from "mongoose";
 import path from "path";
-import env from "./config.js";
+import env from "../config.js";
 
 const __dirname = path.dirname((global.__dirname = process.cwd()));
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
 	const t = await userModel.findOne({ email: req.body.username });
-
+	console.log(t);
 	if (!t || !(await bcrypt.compare(req.body.password, t.password))) {
 		res.status(403);
 		res.end();
@@ -182,7 +182,7 @@ router.post("/save_profile", async (req, res) => {
 
 	const t = await userModel.findById(id);
 	let date = new Date();
-		date.setDate(date.getDate() + 1);
+	date.setDate(date.getDate() + 1);
 	let token = jwt.sign(
 		{
 			id: t._id,
