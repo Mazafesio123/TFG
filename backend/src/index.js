@@ -6,27 +6,35 @@ import routers from "./router/index.js";
 import cors from "cors";
 import { initIO } from "./websocket/index.js";
 import env from "./config.js";
-import expressFileupload from 'express-fileupload';
-import path from 'path';
+import expressFileupload from "express-fileupload";
+import path from "path";
 
 const app = express();
-const __dirname = path.dirname(global.__dirname = process.cwd());
+const __dirname = path.dirname((global.__dirname = process.cwd()));
 
-app.use(cors({ credentials: true, origin: env.FRONTEND }));
-app.use(expressFileupload({
-	useTempFiles: true,
-	tempFileDir: path.join(__dirname, './tmp')
-}))
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(express.static('public'));
+(() => {
+	app.use(express.static(__dirname + "/backend/views"));
+	app.use(cors({ credentials: true, origin: env.FRONTEND }));
+	app.use(
+		expressFileupload({
+			useTempFiles: true,
+			tempFileDir: path.join(__dirname, "./tmp"),
+		})
+	);
+	app.use(express.json());
+	app.use(express.urlencoded({ extended: true }));
+	app.use(express.static(path.join(__dirname, "/backend/public")));
+})();
 
 export const httpServer = http.createServer(app);
 
 for (const router of routers) {
 	app.use("/api", router);
 }
+
+app.all("*", function (req, res) {
+	res.sendFile(__dirname + "/backend/views/" + "index.html");
+});
 
 const socket = initIO(httpServer);
 app.set("socketio", socket);

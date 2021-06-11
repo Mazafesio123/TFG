@@ -24,7 +24,9 @@
             <template v-if="file && file._id">
               <div v-viewer="{ navbar: false, toolbar: false }">
                 <img
-                  v-if="(types[file.ext] || 'text').includes('image')"
+                  v-if="
+                    (mime.contentType(file.ext) || 'text').includes('image')
+                  "
                   :src="`${baseUrl}/documents/_${file._id}.${file.ext}`"
                   style="max-width: 100%; height: auto"
                 />
@@ -90,7 +92,7 @@
 
 <script>
 import Autolinker from "autolinker";
-import types from "@/utils/mimeExtensions.js";
+import mime from "mime-types";
 
 import "viewerjs/dist/viewer.css";
 import Viewer from "v-viewer";
@@ -115,8 +117,8 @@ export default {
     return {
       tiempo: "",
       msgHTML: "",
-      types,
-			baseUrl: process.env.VUE_APP_BASE_URL
+      baseUrl: process.env.VUE_APP_BASE_URL,
+      mime,
     };
   },
   methods: {
@@ -132,13 +134,15 @@ export default {
       });
     },
     async downloadFile() {
-      let {data} = await axios(`${baseUrl}/documents/_${this.file._id}.${this.file.ext}`);
+      let { data } = await axios({
+        url: `${this.baseUrl}/documents/_${this.file._id}.${this.file.ext}`,
+        responseType: "blob",
+      });
       let a = document.createElement("a");
-      a.href = URL.createObjectURL(
-        new File([data], this.file.name, {
-          type: types[this.file.ext] || "text/plain",
-        })
-      );
+      const blob = new File([data], this.file.name, {
+        type: mime.contentType(this.file.ext) || "text/plain",
+      });
+      a.href = URL.createObjectURL(blob);
       a.download = this.file.name;
       a.click();
     },

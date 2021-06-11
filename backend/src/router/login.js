@@ -6,16 +6,13 @@ import { allSockets } from "../websocket/index.js";
 import { isLogged } from "../utils/index.js";
 import mongoose from "mongoose";
 import path from "path";
+import env from "./config.js";
 
 const __dirname = path.dirname((global.__dirname = process.cwd()));
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
-	try {
-		var t = await userModel.findOne({ email: req.body.username });
-	} catch (e) {
-		console.error("ERROR => ", e);
-	}
+	const t = await userModel.findOne({ email: req.body.username });
 
 	if (!t || !(await bcrypt.compare(req.body.password, t.password))) {
 		res.status(403);
@@ -89,7 +86,7 @@ router.post("/register", async (req, res) => {
 		online: false,
 		admin: req.body.admin,
 		unido_en: new Date().getTime(),
-		password: await bcrypt.hash("1234", await bcrypt.genSalt()),
+		password: await bcrypt.hash(env.BASE_PASSWORD, await bcrypt.genSalt()),
 		defaultPassword: true,
 	});
 
@@ -106,7 +103,10 @@ router.post("/change_password", async (req, res) => {
 	} else {
 		let date = new Date();
 		date.setDate(date.getDate() + 1);
-		t.password = await bcrypt.hash(req.body.newPassword, await bcrypt.genSalt());
+		t.password = await bcrypt.hash(
+			req.body.newPassword,
+			await bcrypt.genSalt()
+		);
 		t.defaultPassword = false;
 		await t.save();
 		let token = jwt.sign(
@@ -137,7 +137,10 @@ router.post("/change_password", async (req, res) => {
 
 router.delete("/login", async (req, res) => {
 	let u = await userModel.findById(req.body.id);
-	if (!u) res.end();
+	if (!u) {
+		res.end();
+		return;
+	}
 	u.online = false;
 	await u.save();
 
@@ -177,6 +180,22 @@ router.post("/save_profile", async (req, res) => {
 		img: req.files && req.files.img ? "_" + id + ".png" : "base.png",
 	});
 
+	const t = await userModel.findById(id);
+	let date = new Date();
+		date.setDate(date.getDate() + 1);
+	let token = jwt.sign(
+		{
+			id: t._id,
+			username: t.username,
+			img: t.img,
+			admin: t.admin,
+			defaultPassword: t.defaultPassword,
+			iat: date.getTime(),
+		},
+		process.env.SECRET
+	);
+
+	res.json(token);
 	res.end();
 });
 

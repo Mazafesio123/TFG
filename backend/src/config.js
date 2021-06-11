@@ -8,5 +8,6 @@ export default {
 	PORT: process.env.APP_PORT,
 	MONGO: process.env.MONGO_URL,
 	SECRET: process.env.SECRET,
-	FRONTEND: process.env.APP_FRONTEND
+	FRONTEND: process.env.APP_FRONTEND,
+	BASE_PASSWORD: process.env.BASE_PASSWORD,
 };

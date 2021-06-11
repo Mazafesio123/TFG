@@ -25,7 +25,7 @@ const logged = store.getters.isLoggedIn;
 if (logged) {
 	Vue.use(
 		new VueSocketIO({
-			debug: true,
+			debug: process.env.NODE_ENV == 'development',
 			connection: SocketIO(process.env.VUE_APP_BASE_URL, {
 				widthCredentials: true,
 				transports: ["websocket"],

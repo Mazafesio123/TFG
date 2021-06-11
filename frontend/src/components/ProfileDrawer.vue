@@ -126,7 +126,9 @@ export default {
 				url: `${process.env.VUE_APP_API_URL}/save_profile`,
 				data: formData,
 			}).then(res => {
-				this.$store.dispatch('logout').then(() => this.$router.push('/login'))
+				this.$store.dispatch('iniciarSesion', res.data);
+				this.$root.$emit('snack', 'Se han guardado los cambios')
+				this.$emit("close")
 			});
 		},
 	},

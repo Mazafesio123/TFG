@@ -55,6 +55,7 @@
 					</div>
 				</template>
 
+
 				<template v-slot:append>
 					<div class="d-flex">
 						<v-btn @click.stop="drawer = true" icon>
@@ -90,7 +91,7 @@
 			</div>
 		</v-col>
 
-		<profile-drawer v-model="drawer"></profile-drawer>
+		<profile-drawer :key="drawer" @close="drawer = false" v-model="drawer"></profile-drawer>
 
 		<v-dialog max-width="800" v-model="newTicket">
 			<new-ticket

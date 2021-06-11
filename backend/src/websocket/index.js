@@ -3,8 +3,11 @@ import { ticketModel, userModel } from "./../database/models.js";
 import env from "./../config.js";
 import mongoose from "mongoose";
 import fs from "fs";
+import path from "path";
 
 export let allSockets = [];
+
+const __dirname = path.dirname((global.__dirname = process.cwd()));
 
 export function initIO(httpServer) {
 	const io = new Server(httpServer, {
@@ -67,7 +70,7 @@ export function initIO(httpServer) {
 
 			if (data.file) {
 				await fs.writeFile(
-					`public/documents/_${_id}.${data.file.ext}`,
+					`${__dirname}/backend/public/documents/_${_id}.${data.file.ext}`,
 					data.file.file,
 					(err) =>
 						response(err, {
